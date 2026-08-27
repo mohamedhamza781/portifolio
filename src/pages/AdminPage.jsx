@@ -705,6 +705,107 @@ function MessagesPanel({ api }) {
   );
 }
 
+/* ── لوحة تغيير اسم المستخدم — مرتبطة مباشرة بـ /api/auth/update-username ── */
+function ChangeUsernamePanel({ api }) {
+  const [currentUsername, setCurrentUsername] = useState("");
+  const [newUsername, setNewUsername] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    api.get("/auth/me")
+      .then((res) => { if (!cancelled && res.data?.data?.username) setCurrentUsername(res.data.data.username); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [api]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!newUsername || !currentPassword) {
+      setError("الرجاء تعبئة كل الحقول");
+      return;
+    }
+    if (newUsername.trim().length < 3) {
+      setError("اسم المستخدم يجب أن يكون 3 أحرف على الأقل");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const res = await api.put("/auth/update-username", { newUsername, currentPassword });
+      setCurrentUsername(res.data.data.username);
+      setNewUsername("");
+      setCurrentPassword("");
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      setError(err.response?.data?.message || "تعذر تغيير اسم المستخدم.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Box sx={{ maxWidth: 480 }}>
+      {currentUsername && (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          اسم المستخدم الحالي: <strong>{currentUsername}</strong>
+        </Typography>
+      )}
+
+      <Box component="form" onSubmit={handleSubmit} noValidate>
+        <Stack spacing={2.5}>
+          {error && <Alert severity="error" onClose={() => setError(null)}>{error}</Alert>}
+          {success && <Alert severity="success">تم تغيير اسم المستخدم بنجاح</Alert>}
+
+          <TextField
+            fullWidth
+            label="اسم المستخدم الجديد"
+            value={newUsername}
+            onChange={(e) => setNewUsername(e.target.value)}
+            autoComplete="username"
+            helperText="3 أحرف على الأقل"
+          />
+
+          <TextField
+            fullWidth
+            label="كلمة المرور الحالية (للتأكيد)"
+            type={showPassword ? "text" : "password"}
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            autoComplete="current-password"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={() => setShowPassword((v) => !v)}>
+                    {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={submitting}
+            endIcon={submitting ? <CircularProgress size={16} color="inherit" /> : <SecurityIcon />}
+            sx={{ alignSelf: "flex-start" }}
+          >
+            {submitting ? "جارٍ الحفظ..." : "تغيير اسم المستخدم"}
+          </Button>
+        </Stack>
+      </Box>
+    </Box>
+  );
+}
+
 /* ── لوحة تغيير كلمة المرور — مرتبطة مباشرة بـ /api/auth/change-password ── */
 function ChangePasswordPanel({ api }) {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -1216,9 +1317,16 @@ export default function PortfolioAdminDashboard() {
                   <MessagesPanel api={api} />
                 </Paper>
               ) : activeSection === "security" ? (
-                <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3.5 }, bgcolor: "#ffffff", borderRadius: 4, border: "1px solid #e2e8f0" }}>
-                  <ChangePasswordPanel api={api} />
-                </Paper>
+                <Stack spacing={3}>
+                  <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3.5 }, bgcolor: "#ffffff", borderRadius: 4, border: "1px solid #e2e8f0" }}>
+                    <Typography variant="body2" sx={{ fontWeight: 700, mb: 2.5 }}>تغيير اسم المستخدم</Typography>
+                    <ChangeUsernamePanel api={api} />
+                  </Paper>
+                  <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3.5 }, bgcolor: "#ffffff", borderRadius: 4, border: "1px solid #e2e8f0" }}>
+                    <Typography variant="body2" sx={{ fontWeight: 700, mb: 2.5 }}>تغيير كلمة المرور</Typography>
+                    <ChangePasswordPanel api={api} />
+                  </Paper>
+                </Stack>
               ) : (
                 <>
                   <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3.5 }, bgcolor: "#ffffff", borderRadius: 4, border: "1px solid #e2e8f0" }}>
