@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { createAppTheme } from '../theme';
 
@@ -10,23 +10,15 @@ export const useThemeMode = () => {
   return context;
 };
 
+// Dark mode + the toggle button were removed from the UI, so the site is
+// permanently locked to light mode now — no localStorage lookup, no
+// system-preference detection, nothing that could switch it to dark again.
 export const ThemeModeProvider = ({ children }) => {
-  const [mode, setMode] = useState(() => {
-    return localStorage.getItem('themeMode') || 'dark';
-  });
-
-  const toggleMode = () => {
-    setMode((prev) => {
-      const next = prev === 'light' ? 'dark' : 'light';
-      localStorage.setItem('themeMode', next);
-      return next;
-    });
-  };
-
-  const theme = useMemo(() => createAppTheme(mode), [mode]);
+  const mode = 'light';
+  const theme = useMemo(() => createAppTheme(mode), []);
 
   return (
-    <ThemeContext.Provider value={{ mode, toggleMode }}>
+    <ThemeContext.Provider value={{ mode, toggleMode: () => {} }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         {children}
