@@ -49,6 +49,9 @@ import {
   Circle as UnreadDotIcon,
   Logout as LogoutIcon,
   CloudUpload as UploadIcon,
+  LockReset as SecurityIcon,
+  Visibility as VisibilityIcon,
+  VisibilityOff as VisibilityOffIcon,
 } from "@mui/icons-material";
 
 const cacheRtl = createCache({ key: "muirtl", stylisPlugins: [prefixer, rtlPlugin] });
@@ -163,6 +166,7 @@ const SECTIONS = [
   { key: "contact",      label: "الاتصال",        icon: <ContactIcon /> },
   { key: "footer",       label: "الفوتر",         icon: <FooterIcon /> },
   { key: "messages",     label: "رسائل التواصل",  icon: <MessagesIcon /> },
+  { key: "security",     label: "الأمان",          icon: <SecurityIcon /> },
 ];
 
 /* ── مساعد الذكاء الاصطناعي ──────────────────────────────────── */
@@ -701,6 +705,121 @@ function MessagesPanel({ api }) {
   );
 }
 
+/* ── لوحة تغيير كلمة المرور — مرتبطة مباشرة بـ /api/auth/change-password ── */
+function ChangePasswordPanel({ api }) {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setError("الرجاء تعبئة كل الحقول");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setError("كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError("كلمة المرور الجديدة وتأكيدها غير متطابقين");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await api.put("/auth/change-password", { currentPassword, newPassword });
+      setSuccess(true);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      setError(err.response?.data?.message || "تعذر تغيير كلمة المرور.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Box sx={{ maxWidth: 480 }}>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        بعد تغيير كلمة المرور، استخدمها بالمرة القادمة لتسجيل الدخول للوحة التحكم.
+      </Typography>
+
+      <Box component="form" onSubmit={handleSubmit} noValidate>
+        <Stack spacing={2.5}>
+          {error && <Alert severity="error" onClose={() => setError(null)}>{error}</Alert>}
+          {success && <Alert severity="success">تم تغيير كلمة المرور بنجاح</Alert>}
+
+          <TextField
+            fullWidth
+            label="كلمة المرور الحالية"
+            type={showCurrent ? "text" : "password"}
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            autoComplete="current-password"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={() => setShowCurrent((v) => !v)}>
+                    {showCurrent ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <TextField
+            fullWidth
+            label="كلمة المرور الجديدة"
+            type={showNew ? "text" : "password"}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            autoComplete="new-password"
+            helperText="6 أحرف على الأقل"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={() => setShowNew((v) => !v)}>
+                    {showNew ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <TextField
+            fullWidth
+            label="تأكيد كلمة المرور الجديدة"
+            type={showNew ? "text" : "password"}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            autoComplete="new-password"
+          />
+
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={submitting}
+            endIcon={submitting ? <CircularProgress size={16} color="inherit" /> : <SecurityIcon />}
+            sx={{ alignSelf: "flex-start" }}
+          >
+            {submitting ? "جارٍ الحفظ..." : "تغيير كلمة المرور"}
+          </Button>
+        </Stack>
+      </Box>
+    </Box>
+  );
+}
+
 const EDITORS = {
   profile: ProfileEditor, navbar: NavbarEditor, hero: HeroEditor,
   about: AboutEditor, skills: SkillsEditor, projects: ProjectsEditor,
@@ -1035,7 +1154,7 @@ export default function PortfolioAdminDashboard() {
                     </Stack>
                   </Fade>
 
-                  {activeSection !== "messages" && (
+                  {activeSection !== "messages" && activeSection !== "security" && (
                     <>
                       {/* مبدّل الواجهة / JSON */}
                       <Stack direction="row" sx={{ border: "1px solid", borderColor: "primary.main", borderRadius: "12px", overflow: "hidden" }}>
@@ -1095,6 +1214,10 @@ export default function PortfolioAdminDashboard() {
               {activeSection === "messages" ? (
                 <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3.5 }, bgcolor: "#ffffff", borderRadius: 4, border: "1px solid #e2e8f0" }}>
                   <MessagesPanel api={api} />
+                </Paper>
+              ) : activeSection === "security" ? (
+                <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3.5 }, bgcolor: "#ffffff", borderRadius: 4, border: "1px solid #e2e8f0" }}>
+                  <ChangePasswordPanel api={api} />
                 </Paper>
               ) : (
                 <>
