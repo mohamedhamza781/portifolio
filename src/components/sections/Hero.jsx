@@ -246,12 +246,11 @@ const Hero = () => {
           {/* صندوق الإحصائيات الفاخر (Bento Style Layout) */}
           <Stack 
             direction="row" 
-            spacing={{ xs: 2, md: 4 }} 
             sx={{ 
               mb: 5, 
               animation: 'slideUpIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both',
               flexWrap: 'wrap', 
-              gap: 2 
+              gap: { xs: 2, md: 4 }
             }}
           >
             {profileData.stats.map((stat) => (
