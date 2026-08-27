@@ -120,15 +120,13 @@ const Hero = () => {
           <Typography
             variant="h1"
             sx={{
-              fontSize: { xs: '2.6rem', sm: '5rem', md: '6.5rem' },
+              fontSize: { xs: '2.4rem', sm: '3.6rem', md: '4.8rem', lg: '6.5rem' },
               fontFamily: '"Syne", sans-serif',
               fontWeight: 800,
               lineHeight: 0.95,
               letterSpacing: '-2px',
               mb: 2,
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-              hyphens: 'auto',
+              overflowWrap: 'break-word', // شبكة أمان فقط لأسماء طويلة جداً — ما بتتفعل بالاستخدام العادي
               animation: 'slideUpIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both',
               color: 'text.primary',
             }}
