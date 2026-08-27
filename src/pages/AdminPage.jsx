@@ -430,6 +430,67 @@ function SkillsEditor({ data, onChange }) {
   );
 }
 
+/* ── رفع صورة غلاف المشروع — يستخدم /api/uploads/image العام ─────────── */
+function ProjectImageUploader({ image, onUploaded }) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(null);
+  const inputRef = useRef(null);
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("الملف يجب أن يكون صورة");
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("حجم الصورة يجب ألا يتجاوز 5 ميجابايت");
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
+    setUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await api.post("/uploads/image", formData, {
+        headers: { "Content-Type": undefined },
+      });
+      onUploaded(res.data.data.url);
+    } catch (err) {
+      setError(err.response?.data?.message || "تعذر رفع الصورة — تأكد من تسجيل الدخول.");
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  return (
+    <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
+      {image && (
+        <Box
+          component="img"
+          src={image}
+          alt=""
+          sx={{ width: 64, height: 40, objectFit: "cover", borderRadius: "8px", border: "1px solid #e2e8f0" }}
+        />
+      )}
+      <Button
+        variant="outlined"
+        size="small"
+        component="label"
+        disabled={uploading}
+        startIcon={uploading ? <CircularProgress size={14} /> : <UploadIcon />}
+      >
+        {uploading ? "جارٍ الرفع..." : image ? "تغيير الصورة" : "رفع صورة الغلاف"}
+        <input ref={inputRef} type="file" accept="image/*" hidden onChange={handleUpload} />
+      </Button>
+      {error && <Typography variant="caption" color="error">{error}</Typography>}
+    </Stack>
+  );
+}
+
 function ProjectsEditor({ data, onChange }) {
   return (
     <Stack spacing={3}>
@@ -440,6 +501,13 @@ function ProjectsEditor({ data, onChange }) {
             <IconButton color="error" onClick={() => onChange(data.filter((_, j) => j !== i))}><DeleteIcon /></IconButton>
           </Stack>
           <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: 700 }}>صورة الغلاف</Typography>
+              <ProjectImageUploader
+                image={proj.image}
+                onUploaded={(url) => { const nm = [...data]; nm[i] = { ...nm[i], image: url }; onChange(nm); }}
+              />
+            </Grid>
             <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="عنوان المشروع" value={proj.title || ""} onChange={(e) => { const nm = [...data]; nm[i].title = e.target.value; onChange(nm); }} /></Grid>
             <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="التصنيف" value={proj.category || ""} onChange={(e) => { const nm = [...data]; nm[i].category = e.target.value; onChange(nm); }} /></Grid>
             <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="سنة الإنتاج" type="number" value={proj.year || ""} onChange={(e) => { const nm = [...data]; nm[i].year = parseInt(e.target.value) || ""; onChange(nm); }} /></Grid>
