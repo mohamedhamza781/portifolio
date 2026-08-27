@@ -114,13 +114,13 @@ const Hero = () => {
           pb: { xs: 16, md: 12 } // المسافة السفلية المريحة لمنع الالتصاق بالـ Footer
         }}
       >
-        <Box sx={{ maxWidth: 850 }}>
+        <Box sx={{ maxWidth: { xs: '100%', lg: 1050 } }}>
 
           {/* الاسم بتأثير ضخم وفخم */}
           <Typography
             variant="h1"
             sx={{
-              fontSize: { xs: '2.4rem', sm: '3.6rem', md: '4.8rem', lg: '6.5rem' },
+              fontSize: { xs: '2.4rem', sm: '3.6rem', md: '4.8rem', lg: '5.5rem' },
               fontFamily: '"Syne", sans-serif',
               fontWeight: 800,
               lineHeight: 0.95,
