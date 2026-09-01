@@ -121,7 +121,7 @@ const ProjectCard = ({ project, index, onOpenGallery }) => {
             >
               <StarIcon sx={{ fontSize: 13, color: '#FFD700' }} />
               <Typography variant="caption" sx={{ color: '#FFD700', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-                مميز
+                Featured
               </Typography>
             </Box>
           )}
@@ -149,7 +149,7 @@ const ProjectCard = ({ project, index, onOpenGallery }) => {
               '&:hover': { bgcolor: alpha('#000', 0.75) },
             }}
           >
-            عرض الصور ({project.images.length + 1})
+            {project.images.length + 1} Photos
           </Button>
         )}
       </Box>
@@ -211,7 +211,7 @@ const ProjectCard = ({ project, index, onOpenGallery }) => {
             '&:hover': { color: 'text.primary', bgcolor: alpha(theme.palette.text.primary, 0.04) } 
           }}
         >
-          الكود
+          Code
         </Button>
         <Button
           size="small"
@@ -228,7 +228,7 @@ const ProjectCard = ({ project, index, onOpenGallery }) => {
             '&:hover': { color: theme.palette.mode === 'dark' ? '#FFF' : theme.palette.secondary.dark, bgcolor: alpha(activeAccent, 0.06) } 
           }}
         >
-          معاينة حية
+          Live Demo
         </Button>
         <Typography variant="caption" color="text.disabled" sx={{ ml: 'auto', fontWeight: 600, fontFamily: '"Syne", sans-serif' }}>
           {project.year}
