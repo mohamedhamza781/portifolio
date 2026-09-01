@@ -1,5 +1,21 @@
 import { useState, useEffect } from 'react';
 
+// Turns raw axios/network error objects into a friendly Arabic message
+// instead of leaking things like "timeout of 10000ms exceeded" straight
+// to the UI.
+const getFriendlyErrorMessage = (err) => {
+  if (err.code === 'ECONNABORTED') {
+    return 'الخادم يستغرق وقتاً أطول من المعتاد للاستجابة — تأكد من اتصالك بالإنترنت وحاول مرة أخرى.';
+  }
+  if (!err.response && err.message === 'Network Error') {
+    return 'تعذر الاتصال بالخادم، تأكد من اتصالك بالإنترنت.';
+  }
+  if (err.response?.data?.message) {
+    return err.response.data.message;
+  }
+  return 'حدث خطأ أثناء تحميل البيانات، حاول مرة أخرى.';
+};
+
 /**
  * Generic async data fetcher hook
  * Designed to work with portfolioService functions
@@ -16,7 +32,7 @@ export const useApiData = (fetchFn, params = null, deps = []) => {
       const response = await (params ? fetchFn(params) : fetchFn());
       setData(response.data);
     } catch (err) {
-      setError(err.message || 'An error occurred');
+      setError(getFriendlyErrorMessage(err));
     } finally {
       setLoading(false);
     }

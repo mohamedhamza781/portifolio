@@ -52,6 +52,7 @@ import {
   LockReset as SecurityIcon,
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 
 const cacheRtl = createCache({ key: "muirtl", stylisPlugins: [prefixer, rtlPlugin] });
@@ -508,6 +509,27 @@ function ProjectsEditor({ data, onChange }) {
                 onUploaded={(url) => { const nm = [...data]; nm[i] = { ...nm[i], image: url }; onChange(nm); }}
               />
             </Grid>
+            <Grid item xs={12}>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: 700 }}>معرض صور إضافي (اختياري)</Typography>
+              <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap sx={{ mb: 1.5 }}>
+                {(proj.images || []).map((img, imgIdx) => (
+                  <Box key={imgIdx} sx={{ position: "relative" }}>
+                    <Box component="img" src={img} alt="" sx={{ width: 72, height: 48, objectFit: "cover", borderRadius: "8px", border: "1px solid #e2e8f0" }} />
+                    <IconButton
+                      size="small"
+                      onClick={() => { const nm = [...data]; nm[i] = { ...nm[i], images: nm[i].images.filter((_, j) => j !== imgIdx) }; onChange(nm); }}
+                      sx={{ position: "absolute", top: -8, right: -8, bgcolor: "#fff", border: "1px solid #e2e8f0", width: 22, height: 22, "&:hover": { bgcolor: "#fee2e2" } }}
+                    >
+                      <CloseIcon sx={{ fontSize: 13 }} />
+                    </IconButton>
+                  </Box>
+                ))}
+              </Stack>
+              <ProjectImageUploader
+                image={null}
+                onUploaded={(url) => { const nm = [...data]; nm[i] = { ...nm[i], images: [...(nm[i].images || []), url] }; onChange(nm); }}
+              />
+            </Grid>
             <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="عنوان المشروع" value={proj.title || ""} onChange={(e) => { const nm = [...data]; nm[i].title = e.target.value; onChange(nm); }} /></Grid>
             <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="التصنيف" value={proj.category || ""} onChange={(e) => { const nm = [...data]; nm[i].category = e.target.value; onChange(nm); }} /></Grid>
             <Grid item xs={12} sm={6}><TextField fullWidth size="small" label="سنة الإنتاج" type="number" value={proj.year || ""} onChange={(e) => { const nm = [...data]; nm[i].year = parseInt(e.target.value) || ""; onChange(nm); }} /></Grid>
@@ -519,7 +541,7 @@ function ProjectsEditor({ data, onChange }) {
           </Grid>
         </Paper>
       ))}
-      <Button endIcon={<AddIcon />} variant="outlined" onClick={() => onChange([...data, { id: Date.now(), title: "", description: "", technologies: [], category: "", github: "", demo: "", featured: false, year: new Date().getFullYear() }])}>إضافة مشروع جديد</Button>
+      <Button endIcon={<AddIcon />} variant="outlined" onClick={() => onChange([...data, { id: Date.now(), title: "", description: "", technologies: [], category: "", github: "", demo: "", featured: false, year: new Date().getFullYear(), images: [] }])}>إضافة مشروع جديد</Button>
     </Stack>
   );
 }

@@ -175,7 +175,7 @@ const CertCard = ({ cert, index }) => {
 };
 
 const Certificates = () => {
-  const { data: certificates, loading, error } = useApiData(getCertificates);
+  const { data: certificates, loading, error, refetch } = useApiData(getCertificates);
 
   return (
     <SectionWrapper id="certificates" title="Certificates" subtitle="Credentials & Achievements" dark>
@@ -188,11 +188,11 @@ const Certificates = () => {
         }}
       >
         {loading && <LoadingSpinner height={300} />}
-        {error && <ErrorMessage message={error} />}
+        {error && <ErrorMessage message={error} onRetry={refetch} />}
         {certificates && (
           <Grid container spacing={{ xs: 3, md: 4 }}>
             {certificates.map((cert, i) => (
-              <Grid item xs={12} sm={6} md={4} key={cert._id}>
+              <Grid item xs={12} sm={6} md={4} key={cert.id}>
                 <CertCard cert={cert} index={i} />
               </Grid>
             ))}

@@ -128,7 +128,7 @@ const CategoryCard = ({ category, skills, index }) => {
 };
 
 const Skills = () => {
-  const { data: skills, loading, error } = useApiData(getSkills);
+  const { data: skills, loading, error, refetch } = useApiData(getSkills);
 
   return (
     <SectionWrapper id="skills" title="Skills" subtitle="What I Work With" dark>
@@ -140,11 +140,11 @@ const Skills = () => {
         }}
       >
         {loading && <LoadingSpinner height={300} />}
-        {error && <ErrorMessage message={error} />}
+        {error && <ErrorMessage message={error} onRetry={refetch} />}
         {skills && (
           <Grid container spacing={{ xs: 3, md: 4 }}>
             {skills.map((cat, i) => (
-              <Grid item xs={12} sm={6} key={cat._id}>
+              <Grid item xs={12} sm={6} key={cat.id}>
                 <CategoryCard {...cat} index={i} />
               </Grid>
             ))}

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Box, CircularProgress, Skeleton, Card, CardContent, alpha, useTheme, Typography } from '@mui/material';
+import { Box, CircularProgress, Skeleton, Card, CardContent, alpha, useTheme, Typography, Button } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 // مؤشر تحميل زجاجي عصري يتوسط الشاشة بسلاسة
 export const LoadingSpinner = ({ height = 240 }) => {
@@ -74,7 +75,7 @@ export const SkeletonCard = ({ height = 240 }) => {
 };
 
 // حاوية خطأ احترافية مؤطرة باللون الأحمر الهادئ بدلاً من النص العاري
-export const ErrorMessage = ({ message = 'Something went wrong.' }) => {
+export const ErrorMessage = ({ message = 'Something went wrong.', onRetry }) => {
   const theme = useTheme();
   return (
     <Box 
@@ -106,6 +107,16 @@ export const ErrorMessage = ({ message = 'Something went wrong.' }) => {
       >
         {message}
       </Typography>
+      {onRetry && (
+        <Button
+          size="small"
+          onClick={onRetry}
+          startIcon={<RefreshIcon fontSize="small" />}
+          sx={{ color: 'error.main', fontWeight: 600, textTransform: 'none' }}
+        >
+          إعادة المحاولة
+        </Button>
+      )}
     </Box>
   );
 };

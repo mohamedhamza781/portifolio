@@ -154,7 +154,7 @@ const EducationCard = ({ edu, index }) => {
 };
 
 const Education = () => {
-  const { data: education, loading, error } = useApiData(getEducation);
+  const { data: education, loading, error, refetch } = useApiData(getEducation);
 
   return (
     <SectionWrapper id="education" title="Education" subtitle="Academic Background">
@@ -167,11 +167,11 @@ const Education = () => {
         }}
       >
         {loading && <LoadingSpinner height={300} />}
-        {error && <ErrorMessage message={error} />}
+        {error && <ErrorMessage message={error} onRetry={refetch} />}
         {education && (
           <Box sx={{ maxWidth: 900, mx: 'auto' }}>
             {education.map((edu, i) => (
-              <EducationCard key={edu._id} edu={edu} index={i} />
+              <EducationCard key={edu.id} edu={edu} index={i} />
             ))}
           </Box>
         )}

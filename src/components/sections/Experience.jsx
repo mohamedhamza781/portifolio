@@ -171,7 +171,7 @@ const TimelineItem = ({ job, index, isLast }) => {
 };
 
 const Experience = () => {
-  const { data: experience, loading, error } = useApiData(getExperience);
+  const { data: experience, loading, error, refetch } = useApiData(getExperience);
 
   return (
     <SectionWrapper id="experience" title="Experience" subtitle="My Career Path" dark>
@@ -184,11 +184,11 @@ const Experience = () => {
         }}
       >
         {loading && <LoadingSpinner height={300} />}
-        {error && <ErrorMessage message={error} />}
+        {error && <ErrorMessage message={error} onRetry={refetch} />}
         {experience && (
           <Box sx={{ maxWidth: 1000, mx: 'auto', position: 'relative' }}>
             {experience.map((job, i) => (
-              <TimelineItem key={job._id} job={job} index={i} isLast={i === experience.length - 1} />
+              <TimelineItem key={job.id} job={job} index={i} isLast={i === experience.length - 1} />
             ))}
           </Box>
         )}
