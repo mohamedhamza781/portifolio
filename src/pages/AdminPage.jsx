@@ -496,7 +496,7 @@ function ProjectsEditor({ data, onChange }) {
   return (
     <Stack spacing={3}>
       {data.map((proj, i) => (
-        <Paper variant="outlined" key={proj.id || i} sx={{ p: 2.5 }}>
+        <Paper variant="outlined" key={proj._id || proj.id || i} sx={{ p: 2.5 }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
             <Typography variant="body2" sx={{ fontWeight: 700, color: "primary.main" }}>مشروع #{i + 1}</Typography>
             <IconButton color="error" onClick={() => onChange(data.filter((_, j) => j !== i))}><DeleteIcon /></IconButton>
@@ -1181,20 +1181,23 @@ export default function PortfolioAdminDashboard() {
         await Promise.all(toDelete.map((id) => api.delete(`${endpoint}/${id}`)));
 
         // Remaining items → update existing ones, create new ones (no _id yet)
-        const saved = await Promise.all(
+        await Promise.all(
           newData.map(async (item) => {
             const { _id, __v, createdAt, updatedAt, ...payload } = item;
             if (_id && originalIds.has(_id)) {
-              const res = await api.put(`${endpoint}/${_id}`, payload);
-              return res.data.data;
+              return api.put(`${endpoint}/${_id}`, payload);
             }
-            const res = await api.post(endpoint, payload);
-            return res.data.data;
+            return api.post(endpoint, payload);
           })
         );
 
-        collectionsSyncedRef.current[section] = saved;
-        updateSection(section, saved);
+        // Re-fetch the real, persisted state from the database instead of
+        // trusting each request's individual response — guarantees what's
+        // shown in the dashboard always matches what's actually saved.
+        const freshRes = await api.get(endpoint);
+        const fresh = freshRes.data?.data || [];
+        collectionsSyncedRef.current[section] = fresh;
+        updateSection(section, fresh);
         setSaved(true);
         setTimeout(() => setSaved(false), 2500);
       } catch (err) {
