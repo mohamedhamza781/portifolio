@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Box, Container, Typography, IconButton, Stack, useTheme, alpha } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
@@ -7,22 +7,13 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import EmailIcon from '@mui/icons-material/Email';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import { profileData as defaultProfile } from '../../data/profile';
-import { getProfile } from '../../services/portfolioService';
+import { useSiteData } from '../../context/SiteDataContext';
 
 const Footer = () => {
   const theme = useTheme();
-  // Starts with local defaults, then swaps in the real data from the
-  // backend (edited via the admin dashboard) once it arrives.
-  const [profileData, setProfileData] = useState(defaultProfile);
-
-  useEffect(() => {
-    let cancelled = false;
-    getProfile()
-      .then((res) => { if (!cancelled && res.data) setProfileData(res.data); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, []);
+  // Profile now comes from the shared SiteDataContext (fetched once for
+  // the whole page in MainLayout) instead of an independent fetch here.
+  const { profile: profileData } = useSiteData();
 
   const { name, email, social } = profileData;
   const activeAccent = theme.palette.secondary.main;
@@ -123,8 +114,22 @@ const Footer = () => {
               fontWeight: 500
             }}
           >
-            © {new Date().getFullYear()} {name}
-           
+            © {new Date().getFullYear()} {name}. Built with{' '}
+            <FavoriteIcon 
+              sx={{ 
+                fontSize: 13, 
+                color: activeAccent,
+                animation: 'heartbeat 1.5s infinite ease-in-out',
+                '@keyframes heartbeat': {
+                  '0%': { transform: 'scale(1)' },
+                  '14%': { transform: 'scale(1.12)' },
+                  '28%': { transform: 'scale(1)' },
+                  '42%': { transform: 'scale(1.12)' },
+                  '70%': { transform: 'scale(1)' }
+                }
+              }} 
+            />
+            {' '}and React
           </Typography>
         </Box>
       </Container>

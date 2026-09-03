@@ -1194,7 +1194,11 @@ export default function PortfolioAdminDashboard() {
         // Re-fetch the real, persisted state from the database instead of
         // trusting each request's individual response — guarantees what's
         // shown in the dashboard always matches what's actually saved.
-        const freshRes = await api.get(endpoint);
+        // Cache-bust: the public GET endpoints now carry a short
+        // Cache-Control header for performance, but this specific re-fetch
+        // must always return the true freshly-saved state — never a
+        // stale cached response.
+        const freshRes = await api.get(endpoint, { params: { _: Date.now() } });
         const fresh = freshRes.data?.data || [];
         collectionsSyncedRef.current[section] = fresh;
         updateSection(section, fresh);

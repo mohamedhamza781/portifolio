@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import {
   Box, Typography, Grid, Card, CardContent, CardActions, CardMedia,
   Chip, Button, Stack, useTheme, alpha, Container,
@@ -18,7 +18,7 @@ import { getProjects } from '../../services/portfolioService';
 import { projectCategories } from '../../data/projects';
 import { useInView } from '../../hooks/useApiData';
 
-const ProjectCard = ({ project, index, onOpenGallery }) => {
+const ProjectCard = memo(function ProjectCard({ project, index, onOpenGallery }) {
   const theme = useTheme();
   const { mode } = theme.palette;
   const [ref, inView] = useInView();
@@ -63,6 +63,8 @@ const ProjectCard = ({ project, index, onOpenGallery }) => {
           className="project-media"
           image={projectImage}
           alt={project.title}
+          loading="lazy"
+          decoding="async"
           sx={{
             position: 'absolute',
             top: 0,
@@ -236,7 +238,7 @@ const ProjectCard = ({ project, index, onOpenGallery }) => {
       </CardActions>
     </Card>
   );
-};
+});
 
 const Projects = () => {
   const theme = useTheme();

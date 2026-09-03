@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box, Typography, Grid, TextField, Button, IconButton, Paper,
   Alert, Snackbar, CircularProgress, useTheme, Stack, alpha, Container,
@@ -15,8 +15,8 @@ import TwitterIcon from '@mui/icons-material/Twitter';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import SectionWrapper from '../common/SectionWrapper';
-import { sendContactMessage, getProfile } from '../../services/portfolioService';
-import { profileData as defaultProfile } from '../../data/profile';
+import { sendContactMessage } from '../../services/portfolioService';
+import { useSiteData } from '../../context/SiteDataContext';
 import { useInView } from '../../hooks/useApiData';
 
 const validationSchema = Yup.object({
@@ -62,17 +62,9 @@ const Contact = () => {
   const [leftRef, leftInView] = useInView();
   const [rightRef, rightInView] = useInView();
   const activeAccent = theme.palette.secondary.main;
-  // Starts with local defaults, then swaps in the real data from the
-  // backend (edited via the admin dashboard) once it arrives.
-  const [profileData, setProfileData] = useState(defaultProfile);
-
-  useEffect(() => {
-    let cancelled = false;
-    getProfile()
-      .then((res) => { if (!cancelled && res.data) setProfileData(res.data); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, []);
+  // Profile now comes from the shared SiteDataContext (fetched once for
+  // the whole page in MainLayout) instead of an independent fetch here.
+  const { profile: profileData } = useSiteData();
 
   const formik = useFormik({
     initialValues: { name: '', email: '', subject: '', message: '' },

@@ -7,7 +7,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import { NAV_LINKS as defaultNavLinks, SECTION_IDS } from '../../routes';
 import { useScrollSpy } from '../../hooks/useApiData';
-import { getSettings, getProfile } from '../../services/portfolioService';
+import { useSiteData } from '../../context/SiteDataContext';
 
 const Navbar = () => {
   const theme = useTheme();
@@ -16,21 +16,12 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const activeSection = useScrollSpy(SECTION_IDS);
 
-  // Starts empty/neutral, then swaps in the real data from the backend
-  // (edited via the "شريط التنقل" tab in the admin dashboard) once it arrives.
-  const [profileName, setProfileName] = useState('');
-  const [navbarSettings, setNavbarSettings] = useState({ logo: '', logoFull: '', links: [] });
-
-  useEffect(() => {
-    let cancelled = false;
-    getProfile()
-      .then((res) => { if (!cancelled && res.data) setProfileName(res.data.name || ''); })
-      .catch(() => {});
-    getSettings()
-      .then((res) => { if (!cancelled && res.data?.navbar) setNavbarSettings(res.data.navbar); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, []);
+  // Profile + navbar settings now come from the shared SiteDataContext
+  // (fetched once for the whole page in MainLayout) instead of an
+  // independent fetch here.
+  const { profile, settings } = useSiteData();
+  const profileName = profile.name || '';
+  const navbarSettings = settings.navbar || { logo: '', logoFull: '', links: [] };
 
   // Falls back to the first word of the real name if no short "logo" was
   // set in the dashboard — never shows a placeholder like "Alex".

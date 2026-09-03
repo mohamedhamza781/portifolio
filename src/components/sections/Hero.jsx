@@ -6,8 +6,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import { profileData as defaultProfile } from '../../data/profile';
-import { getProfile, getSettings } from '../../services/portfolioService';
+import { useSiteData } from '../../context/SiteDataContext';
 
 const AnimatedBackground = ({ mode, theme }) => (
   <Box sx={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 0 }}>
@@ -56,25 +55,10 @@ const Hero = () => {
   const { mode } = theme.palette;
   const [roleIdx, setRoleIdx] = useState(0);
   const [visible, setVisible] = useState(true);
-  // Starts with the local defaults so the hero renders immediately, then
-  // swaps in the real data from the backend (edited via the admin dashboard)
-  // once it arrives — no loading flicker.
-  const [profileData, setProfileData] = useState(defaultProfile);
-  // Rotating role text — comes from the "القسم الرئيسي" (Hero) tab in the
-  // admin dashboard (SiteSettings.hero.roles). Empty until an admin adds
-  // some, so nothing fake shows before that.
-  const [roles, setRoles] = useState([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    getProfile()
-      .then((res) => { if (!cancelled && res.data) setProfileData(res.data); })
-      .catch(() => {}); // keep defaults if the backend is unreachable
-    getSettings()
-      .then((res) => { if (!cancelled && res.data?.hero?.roles) setRoles(res.data.hero.roles); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, []);
+  // Profile + roles now come from the shared SiteDataContext (fetched once
+  // for the whole page in MainLayout) instead of an independent fetch here.
+  const { profile: profileData, settings } = useSiteData();
+  const roles = settings.hero?.roles || [];
 
   useEffect(() => {
     if (roles.length === 0) return undefined;

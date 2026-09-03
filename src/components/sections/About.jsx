@@ -1,20 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Box, Typography, Grid, Chip, Stack, Avatar, useTheme, alpha, Container } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import EmailIcon from '@mui/icons-material/Email';
 import CodeIcon from '@mui/icons-material/Code';
 import SectionWrapper from '../common/SectionWrapper';
-import { profileData as defaultProfile } from '../../data/profile';
-import { getProfile, getSettings } from '../../services/portfolioService';
+import { useSiteData } from '../../context/SiteDataContext';
 import { useInView } from '../../hooks/useApiData';
-
-const defaultAboutSettings = {
-  sectionTitle: 'About Me',
-  sectionSubtitle: 'Who I Am',
-  highlights: [],
-  availability: '',
-  yearsOfExperience: '',
-};
 
 const InfoItem = ({ icon, label, value, theme }) => (
   <Box 
@@ -58,21 +49,10 @@ const About = () => {
   const { mode } = theme.palette;
   const [leftRef, leftInView] = useInView();
   const [rightRef, rightInView] = useInView();
-  // Starts with local defaults, then swaps in the real data from the
-  // backend (edited via the admin dashboard) once it arrives.
-  const [profileData, setProfileData] = useState(defaultProfile);
-  const [about, setAbout] = useState(defaultAboutSettings);
-
-  useEffect(() => {
-    let cancelled = false;
-    getProfile()
-      .then((res) => { if (!cancelled && res.data) setProfileData(res.data); })
-      .catch(() => {});
-    getSettings()
-      .then((res) => { if (!cancelled && res.data?.about) setAbout(res.data.about); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, []);
+  // Profile + about settings now come from the shared SiteDataContext
+  // (fetched once for the whole page in MainLayout).
+  const { profile: profileData, settings } = useSiteData();
+  const about = settings.about;
 
   // "MA" from "Mohamed Alnazly", etc. — falls back to nothing while the
   // profile hasn't loaded yet rather than showing a fake placeholder.
