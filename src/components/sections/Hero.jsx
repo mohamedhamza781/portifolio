@@ -213,7 +213,7 @@ const Hero = () => {
               size="large"
               startIcon={<FileDownloadIcon />}
               href={profileData.resumeUrl}
-              download
+              download={profileData.resumeUrl ? `${profileData.name || 'CV'}.pdf` : undefined}
               sx={{ 
                 color: 'text.secondary', 
                 fontWeight: 600,
