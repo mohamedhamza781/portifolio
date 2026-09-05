@@ -138,7 +138,7 @@ const defaultData = {
   profile: {
     name: "", title: "", tagline: "",
     email: "", phone: "", location: "",
-    bio: "", shortBio: "", resumeUrl: "",
+    bio: "", shortBio: "", resumeUrl: "", avatar: null,
     social: { github: "", linkedin: "", twitter: "", instagram: "", whatsapp: "" },
     stats: [],
   },
@@ -252,6 +252,39 @@ function ProfileEditor({ data, onChange }) {
   const [uploadingResume, setUploadingResume] = useState(false);
   const [resumeError, setResumeError] = useState(null);
   const resumeInputRef = useRef(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState(null);
+  const avatarInputRef = useRef(null);
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setAvatarError("الملف يجب أن يكون صورة");
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setAvatarError("حجم الصورة يجب ألا يتجاوز 5 ميجابايت");
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+      return;
+    }
+    setUploadingAvatar(true);
+    setAvatarError(null);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await api.post("/uploads/image", formData, {
+        headers: { "Content-Type": undefined },
+      });
+      f("avatar", res.data.data.url);
+    } catch (err) {
+      setAvatarError(err.response?.data?.message || "تعذر رفع الصورة — تأكد من تسجيل الدخول.");
+    } finally {
+      setUploadingAvatar(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+    }
+  };
 
   const handleResumeUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -287,6 +320,28 @@ function ProfileEditor({ data, onChange }) {
 
   return (
     <Grid container spacing={2.5}>
+      <Grid item xs={12}>
+        <Typography variant="body2" sx={{ mb: 1, fontWeight: 700 }}>الصورة الشخصية</Typography>
+        <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
+          {data.avatar && (
+            <Box component="img" src={data.avatar} alt="" sx={{ width: 56, height: 56, objectFit: "cover", borderRadius: "12px", border: "1px solid #e2e8f0" }} />
+          )}
+          <Button
+            variant="outlined"
+            size="small"
+            component="label"
+            disabled={uploadingAvatar}
+            startIcon={uploadingAvatar ? <CircularProgress size={14} /> : <UploadIcon />}
+          >
+            {uploadingAvatar ? "جارٍ الرفع..." : data.avatar ? "تغيير الصورة" : "رفع صورة"}
+            <input ref={avatarInputRef} type="file" accept="image/*" hidden onChange={handleAvatarUpload} />
+          </Button>
+          {data.avatar && (
+            <Button size="small" color="error" onClick={() => f("avatar", null)}>إزالة الصورة</Button>
+          )}
+        </Stack>
+        {avatarError && <Typography variant="caption" color="error" sx={{ display: "block", mt: 0.5 }}>{avatarError}</Typography>}
+      </Grid>
       <Grid item xs={12} sm={6}><TextField fullWidth label="الاسم الكامل" value={data.name || ""} onChange={(e) => f("name", e.target.value)} /></Grid>
       <Grid item xs={12} sm={6}><TextField fullWidth label="المسمى الوظيفي" value={data.title || ""} onChange={(e) => f("title", e.target.value)} /></Grid>
       <Grid item xs={12}><TextField fullWidth label="شعار تعريفي مختصر (Tagline)" value={data.tagline || ""} onChange={(e) => f("tagline", e.target.value)} /></Grid>

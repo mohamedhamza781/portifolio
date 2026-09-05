@@ -90,6 +90,7 @@ const About = () => {
               {/* Premium Avant-Garde Avatar Container */}
               <Box sx={{ position: 'relative', mb: 5, display: 'inline-block' }}>
                 <Avatar
+                  src={profileData.avatar || undefined}
                   sx={{
                     width: { xs: 180, md: 220 },
                     height: { xs: 180, md: 220 },
@@ -106,7 +107,7 @@ const About = () => {
                     '&:hover': { transform: 'rotate(0deg) scale(1.02)' }
                   }}
                 >
-                  {initials}
+                  {!profileData.avatar && initials}
                 </Avatar>
                 
                 {/* Decorative Frame Element */}
